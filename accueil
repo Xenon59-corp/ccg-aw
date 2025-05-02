@@ -1,0 +1,2294 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CCG - Tableau de Bord</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: { primary: "#00F5D4", secondary: "#1A1A1A" },
+            borderRadius: {
+              none: "0px",
+              sm: "4px",
+              DEFAULT: "8px",
+              md: "12px",
+              lg: "16px",
+              xl: "20px",
+              "2xl": "24px",
+              "3xl": "32px",
+              full: "9999px",
+              button: "8px",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <style>
+      :where([class^="ri-"])::before { content: "\f3c2"; }
+      body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #0F1419;
+      color: #E5E7EB;
+      }
+      h1, h2, h3, h4, h5, h6 {
+      font-family: 'Montserrat', sans-serif;
+      }
+      .watermark {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      opacity: 0.05;
+      font-size: 120px;
+      font-weight: bold;
+      pointer-events: none;
+      z-index: -1;
+      }
+      .nav-item:hover .nav-text {
+      display: block;
+      }
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+      }
+      .custom-checkbox {
+      position: relative;
+      cursor: pointer;
+      }
+      .custom-checkbox input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      }
+      .checkmark {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 20px;
+      width: 20px;
+      background-color: #1F2937;
+      border: 1px solid #374151;
+      border-radius: 4px;
+      transition: all 0.2s;
+      }
+      .custom-checkbox:hover .checkmark {
+      border-color: #00F5D4;
+      }
+      .custom-checkbox input:checked ~ .checkmark {
+      background-color: #00F5D4;
+      border-color: #00F5D4;
+      }
+      .checkmark:after {
+      content: "";
+      position: absolute;
+      display: none;
+      }
+      .custom-checkbox input:checked ~ .checkmark:after {
+      display: block;
+      }
+      .custom-checkbox .checkmark:after {
+      left: 7px;
+      top: 3px;
+      width: 6px;
+      height: 10px;
+      border: solid #111827;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+      }
+      .custom-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+      }
+      .custom-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      }
+      .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #1F2937;
+      transition: .4s;
+      border-radius: 24px;
+      }
+      .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #E5E7EB;
+      transition: .4s;
+      border-radius: 50%;
+      }
+      input:checked + .slider {
+      background-color: #00F5D4;
+      }
+      input:checked + .slider:before {
+      transform: translateX(26px);
+      background-color: #111827;
+      }
+      .status-badge {
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      }
+      .status-badge.success {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: #10B981;
+      }
+      .status-badge.warning {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: #F59E0B;
+      }
+      .status-badge.danger {
+      background-color: rgba(239, 68, 68, 0.2);
+      color: #EF4444;
+      }
+      .agent-avatar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 9999px;
+      background-color: #374151;
+      color: #E5E7EB;
+      font-size: 12px;
+      font-weight: 600;
+      }
+      .map-container {
+      background-image: url('https://public.readdy.ai/gen_page/map_placeholder_1280x720.png');
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      }
+      .map-marker {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      }
+      .map-marker:hover {
+      transform: translate(-50%, -50%) scale(1.2);
+      }
+      .map-marker.danger {
+      background-color: rgba(239, 68, 68, 0.8);
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.3);
+      }
+      .map-marker.warning {
+      background-color: rgba(245, 158, 11, 0.8);
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.3);
+      }
+      .map-marker.info {
+      background-color: rgba(59, 130, 246, 0.8);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+      }
+      .map-marker.success {
+      background-color: rgba(16, 185, 129, 0.8);
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3);
+      }
+      .map-marker::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 8px;
+      height: 8px;
+      background-color: white;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      }
+      .pulse {
+      animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+      0% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+      }
+      70% {
+      box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+      }
+      100% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+      }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="watermark">CCG</div>
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar Navigation -->
+      <div
+        class="w-16 md:w-64 bg-[#111827] flex flex-col border-r border-gray-800"
+      >
+        <div
+          class="flex items-center justify-center h-16 md:justify-start md:px-6 border-b border-gray-800"
+        >
+          <div class="flex items-center space-x-2">
+            <div
+              class="w-8 h-8 flex items-center justify-center bg-primary rounded-full"
+            >
+              <span class="font-bold text-[#111827]">CCG</span>
+            </div>
+            <span class="hidden md:block font-semibold text-white"
+              >Centre de Contrôle des Ghouls</span
+            >
+          </div>
+        </div>
+        <div class="flex flex-col flex-1 py-4 overflow-y-auto">
+          <div class="px-3 mb-6">
+            <div
+              class="flex items-center px-2 py-1 text-xs font-medium text-gray-400 uppercase"
+            >
+              <span class="hidden md:block">Menu Principal</span>
+            </div>
+          </div>
+          <nav class="flex-1 space-y-1 px-3">
+            <a
+              href="https://readdy.ai/home/680d870f-685e-4f34-a85e-f894a22236ac/56c39d5a-5a44-4fa0-8b40-80b4577f3487"
+              data-readdy="true"
+              class="nav-item flex items-center px-2 py-2 text-sm font-medium rounded-md bg-gray-800 text-white group"
+            >
+              <div class="w-8 h-8 flex items-center justify-center mr-3">
+                <i class="ri-dashboard-line ri-lg"></i>
+              </div>
+              <span class="nav-text hidden md:block">Accueil</span>
+            </a>
+            <a
+              href="https://readdy.ai/home/680d870f-685e-4f34-a85e-f894a22236ac/70492c90-5f9a-48f7-8b30-450fae98bbcb"
+              data-readdy="true"
+              class="nav-item flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white group"
+            >
+              <div class="w-8 h-8 flex items-center justify-center mr-3">
+                <i class="ri-database-2-line ri-lg"></i>
+              </div>
+              <span class="nav-text hidden md:block"
+                >Base de données des ghouls</span
+              >
+            </a>
+            <a
+              href="#"
+              class="nav-item flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white group"
+            >
+              <div class="w-8 h-8 flex items-center justify-center mr-3">
+                <i class="ri-add-circle-line ri-lg"></i>
+              </div>
+              <span class="nav-text hidden md:block">Ajouter une ghoul</span>
+            </a>
+            <a
+              href="https://readdy.ai/home/680d870f-685e-4f34-a85e-f894a22236ac/a5068d27-39a6-4cd5-982f-65d71f62283c"
+              data-readdy="true"
+              class="nav-item flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white group"
+            >
+              <div class="w-8 h-8 flex items-center justify-center mr-3">
+                <i class="ri-team-line ri-lg"></i>
+              </div>
+              <span class="nav-text hidden md:block">Agents du CCG</span>
+            </a>
+            <a
+              href="https://readdy.ai/home/680d870f-685e-4f34-a85e-f894a22236ac/b3759dd6-ea76-4ea1-9dfa-78b2c6300b8e"
+              data-readdy="true"
+              class="nav-item flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white group"
+            >
+              <div class="w-8 h-8 flex items-center justify-center mr-3">
+                <i class="ri-file-list-3-line ri-lg"></i>
+              </div>
+              <span class="nav-text hidden md:block">Rapports de mission</span>
+            </a>
+          </nav>
+          <div class="mt-auto px-3">
+            <div
+              class="px-2 py-1 text-xs font-medium text-gray-400 uppercase hidden md:block"
+            >
+              <span>Sécurité</span>
+            </div>
+            <a
+              href="#"
+              id="logoutButton"
+              class="nav-item flex items-center px-2 py-2 mt-1 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white group"
+            >
+              <div class="w-8 h-8 flex items-center justify-center mr-3">
+                <i class="ri-logout-box-line ri-lg"></i>
+              </div>
+              <span class="nav-text hidden md:block">Déconnexion</span>
+            </a>
+            <div
+              id="logoutModal"
+              class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center"
+            >
+              <div class="bg-[#1F2937] rounded-lg p-6 max-w-sm w-full mx-4">
+                <h3 class="text-lg font-medium text-white mb-4">
+                  Confirmation de déconnexion
+                </h3>
+                <p class="text-gray-300 mb-6">
+                  Êtes-vous sûr de vouloir vous déconnecter ?
+                </p>
+                <div class="flex justify-end space-x-3">
+                  <button
+                    id="cancelLogout"
+                    class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-gray-700 rounded-lg transition !rounded-button whitespace-nowrap"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    id="confirmLogout"
+                    class="px-4 py-2 text-sm font-medium text-[#111827] bg-primary hover:bg-primary/90 rounded-lg transition !rounded-button whitespace-nowrap"
+                  >
+                    Déconnexion
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Main Content -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top Header -->
+        <header class="bg-[#111827] border-b border-gray-800">
+          <div class="flex items-center justify-between h-16 px-4">
+            <div class="flex items-center">
+              <div class="flex items-center px-3 py-1 bg-[#1F2937] rounded-md">
+                <div class="w-6 h-6 flex items-center justify-center">
+                  <i class="ri-shield-check-line text-primary"></i>
+                </div>
+                <span class="ml-2 text-xs font-medium text-primary"
+                  >NIVEAU DE SÉCURITÉ: CONFIDENTIEL</span
+                >
+              </div>
+            </div>
+            <div class="flex items-center space-x-4">
+              <div class="relative">
+                <div
+                  id="notificationBtn"
+                  class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded-full cursor-pointer"
+                >
+                  <i class="ri-notification-3-line text-gray-300"></i>
+                </div>
+                <span
+                  class="absolute top-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-[#111827]"
+                ></span>
+                <div
+                  id="notificationDropdown"
+                  class="hidden absolute right-0 mt-2 w-80 bg-[#1F2937] rounded-lg shadow-lg z-50"
+                >
+                  <div class="p-4 border-b border-gray-700">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-sm font-medium text-white">
+                        Notifications
+                      </h3>
+                      <button
+                        id="markAllRead"
+                        class="text-xs text-primary hover:text-primary/80"
+                      >
+                        Marquer tout comme lu
+                      </button>
+                    </div>
+                  </div>
+                  <div class="max-h-96 overflow-y-auto">
+                    <div
+                      class="notification-item p-4 border-b border-gray-700 bg-gray-800/50"
+                    >
+                      <div class="flex items-start">
+                        <div
+                          class="w-2 h-2 mt-2 bg-primary rounded-full flex-shrink-0"
+                        ></div>
+                        <div class="ml-3 flex-1">
+                          <div class="flex items-center justify-between">
+                            <p class="text-sm font-medium text-white">
+                              Alerte: Ghoul SSS détectée
+                            </p>
+                            <span class="text-xs text-gray-400">2 min</span>
+                          </div>
+                          <p class="mt-1 text-sm text-gray-300">
+                            Activité suspecte signalée dans le 24ème
+                            arrondissement.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="notification-item p-4 border-b border-gray-700">
+                      <div class="flex items-start">
+                        <div
+                          class="w-2 h-2 mt-2 bg-gray-600 rounded-full flex-shrink-0"
+                        ></div>
+                        <div class="ml-3 flex-1">
+                          <div class="flex items-center justify-between">
+                            <p class="text-sm font-medium text-white">
+                              Mise à jour: Opération Hibou
+                            </p>
+                            <span class="text-xs text-gray-400">1h</span>
+                          </div>
+                          <p class="mt-1 text-sm text-gray-300">
+                            L'Inspecteur Arima a soumis un nouveau rapport.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="notification-item p-4 border-b border-gray-700">
+                      <div class="flex items-start">
+                        <div
+                          class="w-2 h-2 mt-2 bg-gray-600 rounded-full flex-shrink-0"
+                        ></div>
+                        <div class="ml-3 flex-1">
+                          <div class="flex items-center justify-between">
+                            <p class="text-sm font-medium text-white">
+                              Nouveau rapport soumis
+                            </p>
+                            <span class="text-xs text-gray-400">3h</span>
+                          </div>
+                          <p class="mt-1 text-sm text-gray-300">
+                            Rapport d'investigation du 20ème arrondissement.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="p-4 border-t border-gray-700">
+                    <button
+                      class="w-full text-center text-sm text-primary hover:text-primary/80"
+                    >
+                      Voir toutes les notifications
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div
+                  class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded-full"
+                >
+                  <i class="ri-user-line text-gray-300"></i>
+                </div>
+                <div class="hidden md:block">
+                  <div class="text-sm font-medium text-white">
+                    Inspecteur Arima
+                  </div>
+                  <div class="text-xs text-gray-400">Inspecteur Spécial</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto bg-[#0F1419] p-6">
+          <div class="max-w-7xl mx-auto">
+            <!-- Dashboard Header -->
+            <div
+              class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"
+            >
+              <div>
+                <h1 class="text-2xl font-bold text-white mb-1">
+                  Tableau de Bord
+                </h1>
+                <p class="text-gray-400">
+                  Bienvenue,
+                  <span class="text-primary font-medium">Inspecteur Arima</span
+                  >. Voici les dernières mises à jour.
+                </p>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative">
+                  <input
+                    type="text"
+                    placeholder="Recherche rapide..."
+                    class="w-full sm:w-64 bg-[#1F2937] border-none text-sm text-white placeholder-gray-400 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                  <div
+                    class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 flex items-center justify-center text-gray-400"
+                  >
+                    <i class="ri-search-line"></i>
+                  </div>
+                </div>
+                <button
+                  class="flex items-center justify-center bg-primary text-[#111827] font-medium text-sm px-4 py-2 rounded-lg hover:bg-primary/90 transition !rounded-button whitespace-nowrap"
+                >
+                  <i class="ri-add-line mr-2"></i>
+                  Nouvelle mission
+                </button>
+              </div>
+            </div>
+            <!-- Stats Cards -->
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6"
+            >
+              <!-- Ghouls Card -->
+              <div class="bg-[#1F2937] rounded-lg shadow-lg p-6">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <p class="text-gray-400 text-sm mb-1">
+                      Ghouls capturées/éliminées
+                    </p>
+                    <h3 class="text-3xl font-bold text-white">247</h3>
+                    <div class="flex items-center mt-2">
+                      <span class="text-green-400 text-sm flex items-center">
+                        <i class="ri-arrow-up-line mr-1"></i>
+                        12%
+                      </span>
+                      <span class="text-gray-400 text-xs ml-2"
+                        >depuis le mois dernier</span
+                      >
+                    </div>
+                  </div>
+                  <div
+                    class="w-12 h-12 flex items-center justify-center bg-red-900/20 text-red-400 rounded-lg"
+                  >
+                    <i class="ri-ghost-line ri-xl"></i>
+                  </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-700">
+                  <div class="flex justify-between items-center text-sm">
+                    <div class="text-gray-400">
+                      Capturées: <span class="text-white">89</span>
+                    </div>
+                    <div class="text-gray-400">
+                      Éliminées: <span class="text-white">158</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Missions Card -->
+              <div class="bg-[#1F2937] rounded-lg shadow-lg p-6">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <p class="text-gray-400 text-sm mb-1">Missions en cours</p>
+                    <h3 class="text-3xl font-bold text-white">28</h3>
+                    <div class="flex items-center mt-2">
+                      <span class="text-yellow-400 text-sm flex items-center">
+                        <i class="ri-arrow-right-line mr-1"></i>
+                        Stable
+                      </span>
+                      <span class="text-gray-400 text-xs ml-2"
+                        >depuis le mois dernier</span
+                      >
+                    </div>
+                  </div>
+                  <div
+                    class="w-12 h-12 flex items-center justify-center bg-blue-900/20 text-blue-400 rounded-lg"
+                  >
+                    <i class="ri-radar-line ri-xl"></i>
+                  </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-700">
+                  <div class="flex justify-between items-center text-sm">
+                    <div class="text-gray-400">
+                      Prioritaires: <span class="text-white">12</span>
+                    </div>
+                    <div class="text-gray-400">
+                      Standard: <span class="text-white">16</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Alerts Card -->
+              <div class="bg-[#1F2937] rounded-lg shadow-lg p-6">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <p class="text-gray-400 text-sm mb-1">Alertes actives</p>
+                    <h3 class="text-3xl font-bold text-white">14</h3>
+                    <div class="flex items-center mt-2">
+                      <span class="text-red-400 text-sm flex items-center">
+                        <i class="ri-arrow-up-line mr-1"></i>
+                        23%
+                      </span>
+                      <span class="text-gray-400 text-xs ml-2"
+                        >depuis le mois dernier</span
+                      >
+                    </div>
+                  </div>
+                  <div
+                    class="w-12 h-12 flex items-center justify-center bg-orange-900/20 text-orange-400 rounded-lg"
+                  >
+                    <i class="ri-alarm-warning-line ri-xl"></i>
+                  </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-700">
+                  <div class="flex justify-between items-center text-sm">
+                    <div class="text-gray-400">
+                      Critiques: <span class="text-red-400">5</span>
+                    </div>
+                    <div class="text-gray-400">
+                      Modérées: <span class="text-yellow-400">9</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Agents Card -->
+              <div class="bg-[#1F2937] rounded-lg shadow-lg p-6">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <p class="text-gray-400 text-sm mb-1">
+                      Agents sur le terrain
+                    </p>
+                    <h3 class="text-3xl font-bold text-white">73</h3>
+                    <div class="flex items-center mt-2">
+                      <span class="text-green-400 text-sm flex items-center">
+                        <i class="ri-arrow-up-line mr-1"></i>
+                        8%
+                      </span>
+                      <span class="text-gray-400 text-xs ml-2"
+                        >depuis le mois dernier</span
+                      >
+                    </div>
+                  </div>
+                  <div
+                    class="w-12 h-12 flex items-center justify-center bg-green-900/20 text-green-400 rounded-lg"
+                  >
+                    <i class="ri-team-line ri-xl"></i>
+                  </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-700">
+                  <div class="flex justify-between items-center text-sm">
+                    <div class="text-gray-400">
+                      Inspecteurs: <span class="text-white">42</span>
+                    </div>
+                    <div class="text-gray-400">
+                      Assistants: <span class="text-white">31</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Charts and Map Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+              <!-- Activity Chart -->
+              <div class="bg-[#1F2937] rounded-lg shadow-lg p-6 lg:col-span-2">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 class="text-lg font-semibold text-white">
+                    Activité des Ghouls (6 derniers mois)
+                  </h3>
+                  <div class="flex space-x-2">
+                    <button
+                      class="px-3 py-1 text-xs font-medium text-gray-300 bg-gray-700 rounded-full hover:bg-gray-600 transition !rounded-button whitespace-nowrap"
+                    >
+                      Mensuel
+                    </button>
+                    <button
+                      class="px-3 py-1 text-xs font-medium text-[#111827] bg-primary rounded-full hover:bg-primary/90 transition !rounded-button whitespace-nowrap"
+                    >
+                      Hebdomadaire
+                    </button>
+                  </div>
+                </div>
+                <div id="activityChart" class="h-72"></div>
+              </div>
+              <!-- Mission Types Chart -->
+              <div class="bg-[#1F2937] rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-white mb-6">
+                  Types de Missions
+                </h3>
+                <div id="missionTypesChart" class="h-72"></div>
+              </div>
+            </div>
+            <!-- Map and Priority Missions -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+              <!-- Map -->
+              <div class="bg-[#1F2937] rounded-lg shadow-lg p-6 lg:col-span-2">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 class="text-lg font-semibold text-white">
+                    Carte des Incidents
+                  </h3>
+                  <div class="flex space-x-2">
+                    <button
+                      class="px-3 py-1 text-xs font-medium text-[#111827] bg-primary rounded-full hover:bg-primary/90 transition !rounded-button whitespace-nowrap"
+                    >
+                      Tokyo
+                    </button>
+                    <button
+                      class="px-3 py-1 text-xs font-medium text-gray-300 bg-gray-700 rounded-full hover:bg-gray-600 transition !rounded-button whitespace-nowrap"
+                    >
+                      National
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="relative h-80 map-container rounded-lg overflow-hidden"
+                >
+                  <!-- Map Markers -->
+                  <div
+                    class="map-marker danger pulse"
+                    style="top: 30%; left: 40%;"
+                    title="Alerte: Activité de ghoul SSS détectée"
+                  ></div>
+                  <div
+                    class="map-marker danger"
+                    style="top: 45%; left: 60%;"
+                    title="Incident récent: Combat entre ghouls"
+                  ></div>
+                  <div
+                    class="map-marker warning"
+                    style="top: 55%; left: 35%;"
+                    title="Disparitions signalées"
+                  ></div>
+                  <div
+                    class="map-marker warning"
+                    style="top: 25%; left: 70%;"
+                    title="Activité suspecte"
+                  ></div>
+                  <div
+                    class="map-marker info"
+                    style="top: 65%; left: 50%;"
+                    title="Patrouille en cours"
+                  ></div>
+                  <div
+                    class="map-marker info"
+                    style="top: 40%; left: 80%;"
+                    title="Opération planifiée"
+                  ></div>
+                  <div
+                    class="map-marker success"
+                    style="top: 70%; left: 25%;"
+                    title="Zone sécurisée"
+                  ></div>
+                  <!-- Map Legend -->
+                  <div
+                    class="absolute bottom-4 right-4 bg-[#111827] bg-opacity-80 p-3 rounded-lg"
+                  >
+                    <div class="text-xs font-medium text-white mb-2">
+                      Légende
+                    </div>
+                    <div class="space-y-2">
+                      <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                        <span class="text-xs text-gray-300"
+                          >Alerte critique</span
+                        >
+                      </div>
+                      <div class="flex items-center">
+                        <div
+                          class="w-3 h-3 rounded-full bg-yellow-500 mr-2"
+                        ></div>
+                        <span class="text-xs text-gray-300"
+                          >Alerte modérée</span
+                        >
+                      </div>
+                      <div class="flex items-center">
+                        <div
+                          class="w-3 h-3 rounded-full bg-blue-500 mr-2"
+                        ></div>
+                        <span class="text-xs text-gray-300"
+                          >Opération en cours</span
+                        >
+                      </div>
+                      <div class="flex items-center">
+                        <div
+                          class="w-3 h-3 rounded-full bg-green-500 mr-2"
+                        ></div>
+                        <span class="text-xs text-gray-300"
+                          >Zone sécurisée</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Priority Missions -->
+              <div class="bg-[#1F2937] rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 class="text-lg font-semibold text-white">
+                    Missions Prioritaires
+                  </h3>
+                  <button
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition"
+                  >
+                    <i class="ri-more-2-fill"></i>
+                  </button>
+                </div>
+                <div class="space-y-4">
+                  <!-- Mission 1 -->
+                  <div class="bg-[#111827] rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 class="text-white font-medium">Opération Hibou</h4>
+                        <p class="text-xs text-gray-400">
+                          24ème arrondissement
+                        </p>
+                      </div>
+                      <span
+                        class="px-2 py-1 text-xs font-medium bg-red-900/20 text-red-400 rounded-full"
+                        >SSS</span
+                      >
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                      <div class="flex -space-x-2 overflow-hidden">
+                        <div
+                          class="agent-avatar border-2 border-[#111827] z-30"
+                        >
+                          A
+                        </div>
+                        <div
+                          class="agent-avatar border-2 border-[#111827] z-20"
+                        >
+                          S
+                        </div>
+                        <div
+                          class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 border-2 border-[#111827] text-xs text-gray-300"
+                        >
+                          +8
+                        </div>
+                      </div>
+                      <span class="status-badge warning">En cours</span>
+                    </div>
+                    <div class="flex justify-end">
+                      <button
+                        class="text-xs text-primary hover:text-primary/80"
+                      >
+                        Voir les détails
+                      </button>
+                    </div>
+                  </div>
+                  <!-- Mission 2 -->
+                  <div class="bg-[#111827] rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 class="text-white font-medium">
+                          Traque du Gourmet
+                        </h4>
+                        <p class="text-xs text-gray-400">
+                          13ème arrondissement
+                        </p>
+                      </div>
+                      <span
+                        class="px-2 py-1 text-xs font-medium bg-purple-900/20 text-purple-400 rounded-full"
+                        >S</span
+                      >
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                      <div class="flex -space-x-2 overflow-hidden">
+                        <div
+                          class="agent-avatar border-2 border-[#111827] z-30"
+                        >
+                          M
+                        </div>
+                        <div
+                          class="agent-avatar border-2 border-[#111827] z-20"
+                        >
+                          K
+                        </div>
+                        <div
+                          class="agent-avatar border-2 border-[#111827] z-10"
+                        >
+                          T
+                        </div>
+                      </div>
+                      <span class="status-badge warning">En cours</span>
+                    </div>
+                    <div class="flex justify-end">
+                      <button
+                        class="text-xs text-primary hover:text-primary/80"
+                      >
+                        Voir les détails
+                      </button>
+                    </div>
+                  </div>
+                  <!-- Mission 3 -->
+                  <div class="bg-[#111827] rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 class="text-white font-medium">Enquête Masque</h4>
+                        <p class="text-xs text-gray-400">
+                          13ème arrondissement
+                        </p>
+                      </div>
+                      <span
+                        class="px-2 py-1 text-xs font-medium bg-orange-900/20 text-orange-400 rounded-full"
+                        >A</span
+                      >
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                      <div class="flex -space-x-2 overflow-hidden">
+                        <div
+                          class="agent-avatar border-2 border-[#111827] z-30"
+                        >
+                          U
+                        </div>
+                        <div
+                          class="agent-avatar border-2 border-[#111827] z-20"
+                        >
+                          H
+                        </div>
+                      </div>
+                      <span class="status-badge warning">En cours</span>
+                    </div>
+                    <div class="flex justify-end">
+                      <button
+                        class="text-xs text-primary hover:text-primary/80"
+                      >
+                        Voir les détails
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Recent Activity and Quick Actions -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+              <!-- Recent Activity -->
+              <div class="bg-[#1F2937] rounded-lg shadow-lg p-6 lg:col-span-2">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 class="text-lg font-semibold text-white">
+                    Activités Récentes
+                  </h3>
+                  <button class="text-sm text-primary hover:text-primary/80">
+                    Voir tout
+                  </button>
+                </div>
+                <div class="space-y-4">
+                  <!-- Activity 1 -->
+                  <div class="flex items-start space-x-4">
+                    <div
+                      class="w-10 h-10 flex items-center justify-center bg-red-900/20 text-red-400 rounded-full flex-shrink-0"
+                    >
+                      <i class="ri-alarm-warning-line"></i>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between">
+                        <h4 class="text-white font-medium">
+                          Alerte de niveau SSS
+                        </h4>
+                        <span class="text-xs text-gray-400">Il y a 23 min</span>
+                      </div>
+                      <p class="text-sm text-gray-300 mt-1">
+                        Activité suspecte détectée dans le 24ème arrondissement.
+                        Possible présence de l'Hibou Borgne.
+                      </p>
+                      <div class="flex items-center mt-2">
+                        <button
+                          class="text-xs text-primary hover:text-primary/80 mr-4"
+                        >
+                          Voir les détails
+                        </button>
+                        <button
+                          class="text-xs text-gray-400 hover:text-gray-300"
+                        >
+                          Marquer comme lu
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Activity 2 -->
+                  <div class="flex items-start space-x-4">
+                    <div
+                      class="w-10 h-10 flex items-center justify-center bg-blue-900/20 text-blue-400 rounded-full flex-shrink-0"
+                    >
+                      <i class="ri-file-list-3-line"></i>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between">
+                        <h4 class="text-white font-medium">
+                          Nouveau rapport de mission
+                        </h4>
+                        <span class="text-xs text-gray-400">Il y a 1h</span>
+                      </div>
+                      <p class="text-sm text-gray-300 mt-1">
+                        L'Inspecteur Suzuya a soumis un rapport sur l'opération
+                        "Traque du Gourmet" dans le 13ème arrondissement.
+                      </p>
+                      <div class="flex items-center mt-2">
+                        <button
+                          class="text-xs text-primary hover:text-primary/80 mr-4"
+                        >
+                          Lire le rapport
+                        </button>
+                        <button
+                          class="text-xs text-gray-400 hover:text-gray-300"
+                        >
+                          Marquer comme lu
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Activity 3 -->
+                  <div class="flex items-start space-x-4">
+                    <div
+                      class="w-10 h-10 flex items-center justify-center bg-green-900/20 text-green-400 rounded-full flex-shrink-0"
+                    >
+                      <i class="ri-user-add-line"></i>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between">
+                        <h4 class="text-white font-medium">
+                          Nouvel agent assigné
+                        </h4>
+                        <span class="text-xs text-gray-400">Il y a 3h</span>
+                      </div>
+                      <p class="text-sm text-gray-300 mt-1">
+                        L'Inspecteur Spécial Kuroiwa a été assigné à l'opération
+                        "Hibou" dans le 24ème arrondissement.
+                      </p>
+                      <div class="flex items-center mt-2">
+                        <button
+                          class="text-xs text-primary hover:text-primary/80 mr-4"
+                        >
+                          Voir le profil
+                        </button>
+                        <button
+                          class="text-xs text-gray-400 hover:text-gray-300"
+                        >
+                          Marquer comme lu
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Activity 4 -->
+                  <div class="flex items-start space-x-4">
+                    <div
+                      class="w-10 h-10 flex items-center justify-center bg-yellow-900/20 text-yellow-400 rounded-full flex-shrink-0"
+                    >
+                      <i class="ri-ghost-line"></i>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between">
+                        <h4 class="text-white font-medium">
+                          Nouvelle ghoul enregistrée
+                        </h4>
+                        <span class="text-xs text-gray-400">Il y a 5h</span>
+                      </div>
+                      <p class="text-sm text-gray-300 mt-1">
+                        Une nouvelle ghoul de rang A a été identifiée dans le
+                        20ème arrondissement. Nom de code: "Serpent".
+                      </p>
+                      <div class="flex items-center mt-2">
+                        <button
+                          class="text-xs text-primary hover:text-primary/80 mr-4"
+                        >
+                          Voir le profil
+                        </button>
+                        <button
+                          class="text-xs text-gray-400 hover:text-gray-300"
+                        >
+                          Marquer comme lu
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Quick Actions -->
+              <div class="bg-[#1F2937] rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-white mb-6">
+                  Actions Rapides
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                  <a
+                    href="https://readdy.ai/home/680d870f-685e-4f34-a85e-f894a22236ac/591278f3-d8a0-4c7d-a785-32a1d8b8eb5e"
+                    data-readdy="true"
+                    class="flex flex-col items-center justify-center bg-[#111827] hover:bg-gray-800 transition p-4 rounded-lg"
+                  >
+                    <div
+                      class="w-10 h-10 flex items-center justify-center bg-blue-900/20 text-blue-400 rounded-full mb-2"
+                    >
+                      <i class="ri-file-add-line"></i>
+                    </div>
+                    <span class="text-sm text-white text-center"
+                      >Nouveau rapport</span
+                    >
+                  </a>
+                  <button
+                    id="quickAlertBtn"
+                    class="flex flex-col items-center justify-center bg-[#111827] hover:bg-gray-800 transition p-4 rounded-lg"
+                  >
+                    <div
+                      class="w-10 h-10 flex items-center justify-center bg-red-900/20 text-red-400 rounded-full mb-2"
+                    >
+                      <i class="ri-alarm-warning-line"></i>
+                    </div>
+                    <span class="text-sm text-white text-center"
+                      >Alerte rapide</span
+                    >
+                  </button>
+                  <div
+                    id="quickAlertModal"
+                    class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-[#1F2937] rounded-lg p-6 max-w-lg w-full mx-4"
+                    >
+                      <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-medium text-white">
+                          Créer une Alerte Rapide
+                        </h3>
+                        <button
+                          id="closeQuickAlert"
+                          class="text-gray-400 hover:text-white"
+                        >
+                          <i class="ri-close-line ri-lg"></i>
+                        </button>
+                      </div>
+                      <form id="quickAlertForm">
+                        <div class="space-y-4">
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Niveau d'Alerte</label
+                            >
+                            <div class="relative">
+                              <button
+                                type="button"
+                                id="alertLevelBtn"
+                                class="w-full flex items-center justify-between bg-[#111827] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+                              >
+                                <span id="selectedLevel"
+                                  >Sélectionner un niveau</span
+                                >
+                                <i class="ri-arrow-down-s-line"></i>
+                              </button>
+                              <div
+                                id="alertLevelDropdown"
+                                class="absolute z-10 w-full mt-1 bg-[#111827] rounded-lg shadow-lg hidden"
+                              >
+                                <div class="py-1">
+                                  <button
+                                    type="button"
+                                    class="alert-level-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="SSS"
+                                  >
+                                    SSS - Menace Maximale
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="alert-level-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="S"
+                                  >
+                                    S - Très Dangereuse
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="alert-level-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="A"
+                                  >
+                                    A - Dangereuse
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="alert-level-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="B"
+                                  >
+                                    B - Modérée
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Localisation</label
+                            >
+                            <div class="relative">
+                              <button
+                                type="button"
+                                id="locationBtn"
+                                class="w-full flex items-center justify-between bg-[#111827] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+                              >
+                                <span id="selectedLocation"
+                                  >Sélectionner un arrondissement</span
+                                >
+                                <i class="ri-arrow-down-s-line"></i>
+                              </button>
+                              <div
+                                id="locationDropdown"
+                                class="absolute z-10 w-full mt-1 bg-[#111827] rounded-lg shadow-lg hidden"
+                              >
+                                <div class="py-1">
+                                  <button
+                                    type="button"
+                                    class="location-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="1"
+                                  >
+                                    1er arrondissement
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="location-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="13"
+                                  >
+                                    13ème arrondissement
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="location-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="20"
+                                  >
+                                    20ème arrondissement
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="location-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="24"
+                                  >
+                                    24ème arrondissement
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Type de Ghoul Suspectée</label
+                            >
+                            <input
+                              type="text"
+                              class="w-full bg-[#111827] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+                              placeholder="Ex: Masquée, Ailée, etc."
+                            />
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Description de l'Incident</label
+                            >
+                            <textarea
+                              class="w-full bg-[#111827] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                              rows="4"
+                              placeholder="Décrivez l'incident..."
+                            ></textarea>
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Agents Disponibles</label
+                            >
+                            <div
+                              class="space-y-2 max-h-32 overflow-y-auto bg-[#111827] p-3 rounded-lg"
+                            >
+                              <label class="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  class="form-checkbox bg-gray-700 border-gray-600 rounded text-primary focus:ring-primary"
+                                />
+                                <span class="text-white">Inspecteur Arima</span>
+                              </label>
+                              <label class="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  class="form-checkbox bg-gray-700 border-gray-600 rounded text-primary focus:ring-primary"
+                                />
+                                <span class="text-white"
+                                  >Inspecteur Suzuya</span
+                                >
+                              </label>
+                              <label class="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  class="form-checkbox bg-gray-700 border-gray-600 rounded text-primary focus:ring-primary"
+                                />
+                                <span class="text-white"
+                                  >Inspecteur Kuroiwa</span
+                                >
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="flex justify-end space-x-3 mt-6">
+                          <button
+                            type="button"
+                            id="cancelQuickAlert"
+                            class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-gray-700 rounded-lg transition !rounded-button whitespace-nowrap"
+                          >
+                            Annuler
+                          </button>
+                          <button
+                            type="submit"
+                            class="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition !rounded-button whitespace-nowrap"
+                          >
+                            Envoyer l'alerte
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                  <button
+                    id="reinforcementBtn"
+                    class="flex flex-col items-center justify-center bg-[#111827] hover:bg-gray-800 transition p-4 rounded-lg"
+                  >
+                    <div
+                      class="w-10 h-10 flex items-center justify-center bg-green-900/20 text-green-400 rounded-full mb-2"
+                    >
+                      <i class="ri-team-line"></i>
+                    </div>
+                    <span class="text-sm text-white text-center"
+                      >Demande de renfort</span
+                    >
+                  </button>
+                  <div
+                    id="reinforcementModal"
+                    class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-[#1F2937] rounded-lg p-6 max-w-lg w-full mx-4"
+                    >
+                      <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-medium text-white">
+                          Demande de Renfort
+                        </h3>
+                        <button
+                          id="closeReinforcement"
+                          class="text-gray-400 hover:text-white"
+                        >
+                          <i class="ri-close-line ri-lg"></i>
+                        </button>
+                      </div>
+                      <form id="reinforcementForm">
+                        <div class="space-y-4">
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Mission Concernée</label
+                            >
+                            <div class="relative">
+                              <button
+                                type="button"
+                                id="missionSelectBtn"
+                                class="w-full flex items-center justify-between bg-[#111827] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+                              >
+                                <span id="selectedMission"
+                                  >Sélectionner une mission</span
+                                >
+                                <i class="ri-arrow-down-s-line"></i>
+                              </button>
+                              <div
+                                id="missionDropdown"
+                                class="absolute z-10 w-full mt-1 bg-[#111827] rounded-lg shadow-lg hidden"
+                              >
+                                <div class="py-1">
+                                  <button
+                                    type="button"
+                                    class="mission-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="hibou"
+                                  >
+                                    Opération Hibou (SSS)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="mission-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="gourmet"
+                                  >
+                                    Traque du Gourmet (S)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="mission-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="masque"
+                                  >
+                                    Enquête Masque (A)
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Niveau d'Urgence</label
+                            >
+                            <div class="grid grid-cols-3 gap-2">
+                              <label
+                                class="relative flex items-center justify-center"
+                              >
+                                <input
+                                  type="radio"
+                                  name="urgency"
+                                  value="low"
+                                  class="absolute opacity-0 w-full h-full cursor-pointer"
+                                />
+                                <span
+                                  class="w-full py-2 text-center text-sm rounded-lg bg-[#111827] text-gray-300 cursor-pointer hover:bg-gray-700"
+                                  >Faible</span
+                                >
+                              </label>
+                              <label
+                                class="relative flex items-center justify-center"
+                              >
+                                <input
+                                  type="radio"
+                                  name="urgency"
+                                  value="medium"
+                                  class="absolute opacity-0 w-full h-full cursor-pointer"
+                                />
+                                <span
+                                  class="w-full py-2 text-center text-sm rounded-lg bg-[#111827] text-gray-300 cursor-pointer hover:bg-gray-700"
+                                  >Moyen</span
+                                >
+                              </label>
+                              <label
+                                class="relative flex items-center justify-center"
+                              >
+                                <input
+                                  type="radio"
+                                  name="urgency"
+                                  value="high"
+                                  class="absolute opacity-0 w-full h-full cursor-pointer"
+                                />
+                                <span
+                                  class="w-full py-2 text-center text-sm rounded-lg bg-[#111827] text-gray-300 cursor-pointer hover:bg-gray-700"
+                                  >Élevé</span
+                                >
+                              </label>
+                            </div>
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Nombre d'Agents Requis</label
+                            >
+                            <input
+                              type="number"
+                              min="1"
+                              max="20"
+                              class="w-full bg-[#111827] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+                              placeholder="Ex: 5"
+                            />
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Compétences Nécessaires</label
+                            >
+                            <div class="space-y-2 bg-[#111827] p-3 rounded-lg">
+                              <label class="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  class="form-checkbox bg-gray-700 border-gray-600 rounded text-green-400 focus:ring-green-400"
+                                />
+                                <span class="text-white">Combat rapproché</span>
+                              </label>
+                              <label class="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  class="form-checkbox bg-gray-700 border-gray-600 rounded text-green-400 focus:ring-green-400"
+                                />
+                                <span class="text-white"
+                                  >Quinque à distance</span
+                                >
+                              </label>
+                              <label class="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  class="form-checkbox bg-gray-700 border-gray-600 rounded text-green-400 focus:ring-green-400"
+                                />
+                                <span class="text-white">Investigation</span>
+                              </label>
+                              <label class="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  class="form-checkbox bg-gray-700 border-gray-600 rounded text-green-400 focus:ring-green-400"
+                                />
+                                <span class="text-white">Tactique</span>
+                              </label>
+                            </div>
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Justification de la Demande</label
+                            >
+                            <textarea
+                              class="w-full bg-[#111827] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                              rows="4"
+                              placeholder="Expliquez pourquoi des renforts sont nécessaires..."
+                            ></textarea>
+                          </div>
+                        </div>
+                        <div class="flex justify-end space-x-3 mt-6">
+                          <button
+                            type="button"
+                            id="cancelReinforcement"
+                            class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-gray-700 rounded-lg transition !rounded-button whitespace-nowrap"
+                          >
+                            Annuler
+                          </button>
+                          <button
+                            type="submit"
+                            class="px-4 py-2 text-sm font-medium text-[#111827] bg-green-400 hover:bg-green-500 rounded-lg transition !rounded-button whitespace-nowrap"
+                          >
+                            Envoyer la demande
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                  <button
+                    id="statusUpdateBtn"
+                    class="flex flex-col items-center justify-center bg-[#111827] hover:bg-gray-800 transition p-4 rounded-lg"
+                  >
+                    <div
+                      class="w-10 h-10 flex items-center justify-center bg-yellow-900/20 text-yellow-400 rounded-full mb-2"
+                    >
+                      <i class="ri-refresh-line"></i>
+                    </div>
+                    <span class="text-sm text-white text-center"
+                      >Mise à jour de statut</span
+                    >
+                  </button>
+                  <div
+                    id="statusUpdateModal"
+                    class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-[#1F2937] rounded-lg p-6 max-w-lg w-full mx-4"
+                    >
+                      <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-medium text-white">
+                          Mise à jour de statut
+                        </h3>
+                        <button
+                          id="closeStatusUpdate"
+                          class="text-gray-400 hover:text-white"
+                        >
+                          <i class="ri-close-line ri-lg"></i>
+                        </button>
+                      </div>
+                      <form id="statusUpdateForm">
+                        <div class="space-y-4">
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Sélectionner une mission</label
+                            >
+                            <div class="relative">
+                              <button
+                                type="button"
+                                id="statusMissionBtn"
+                                class="w-full flex items-center justify-between bg-[#111827] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+                              >
+                                <span id="selectedStatusMission"
+                                  >Sélectionner une mission</span
+                                >
+                                <i class="ri-arrow-down-s-line"></i>
+                              </button>
+                              <div
+                                id="statusMissionDropdown"
+                                class="absolute z-10 w-full mt-1 bg-[#111827] rounded-lg shadow-lg hidden"
+                              >
+                                <div class="py-1">
+                                  <button
+                                    type="button"
+                                    class="status-mission-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="hibou"
+                                  >
+                                    Opération Hibou (SSS)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="status-mission-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="gourmet"
+                                  >
+                                    Traque du Gourmet (S)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="status-mission-option w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                                    data-value="masque"
+                                  >
+                                    Enquête Masque (A)
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Nouveau statut</label
+                            >
+                            <div class="grid grid-cols-2 gap-2">
+                              <label
+                                class="relative flex items-center justify-center"
+                              >
+                                <input
+                                  type="radio"
+                                  name="status"
+                                  value="in_progress"
+                                  class="absolute opacity-0 w-full h-full cursor-pointer"
+                                />
+                                <span
+                                  class="w-full py-2 text-center text-sm rounded-lg bg-[#111827] text-gray-300 cursor-pointer hover:bg-gray-700"
+                                  >En cours</span
+                                >
+                              </label>
+                              <label
+                                class="relative flex items-center justify-center"
+                              >
+                                <input
+                                  type="radio"
+                                  name="status"
+                                  value="completed"
+                                  class="absolute opacity-0 w-full h-full cursor-pointer"
+                                />
+                                <span
+                                  class="w-full py-2 text-center text-sm rounded-lg bg-[#111827] text-gray-300 cursor-pointer hover:bg-gray-700"
+                                  >Terminée</span
+                                >
+                              </label>
+                              <label
+                                class="relative flex items-center justify-center"
+                              >
+                                <input
+                                  type="radio"
+                                  name="status"
+                                  value="on_hold"
+                                  class="absolute opacity-0 w-full h-full cursor-pointer"
+                                />
+                                <span
+                                  class="w-full py-2 text-center text-sm rounded-lg bg-[#111827] text-gray-300 cursor-pointer hover:bg-gray-700"
+                                  >En attente</span
+                                >
+                              </label>
+                              <label
+                                class="relative flex items-center justify-center"
+                              >
+                                <input
+                                  type="radio"
+                                  name="status"
+                                  value="cancelled"
+                                  class="absolute opacity-0 w-full h-full cursor-pointer"
+                                />
+                                <span
+                                  class="w-full py-2 text-center text-sm rounded-lg bg-[#111827] text-gray-300 cursor-pointer hover:bg-gray-700"
+                                  >Annulée</span
+                                >
+                              </label>
+                            </div>
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Agents impliqués</label
+                            >
+                            <div
+                              class="space-y-2 max-h-32 overflow-y-auto bg-[#111827] p-3 rounded-lg"
+                            >
+                              <label class="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  class="form-checkbox bg-gray-700 border-gray-600 rounded text-yellow-400 focus:ring-yellow-400"
+                                />
+                                <span class="text-white">Inspecteur Arima</span>
+                              </label>
+                              <label class="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  class="form-checkbox bg-gray-700 border-gray-600 rounded text-yellow-400 focus:ring-yellow-400"
+                                />
+                                <span class="text-white"
+                                  >Inspecteur Suzuya</span
+                                >
+                              </label>
+                              <label class="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  class="form-checkbox bg-gray-700 border-gray-600 rounded text-yellow-400 focus:ring-yellow-400"
+                                />
+                                <span class="text-white"
+                                  >Inspecteur Kuroiwa</span
+                                >
+                              </label>
+                            </div>
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Détails de la situation</label
+                            >
+                            <textarea
+                              class="w-full bg-[#111827] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                              rows="4"
+                              placeholder="Décrivez la situation actuelle..."
+                            ></textarea>
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm font-medium text-gray-300 mb-2"
+                              >Pièces jointes</label
+                            >
+                            <div
+                              class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-700 border-dashed rounded-lg"
+                            >
+                              <div class="space-y-1 text-center">
+                                <i
+                                  class="ri-upload-cloud-line text-gray-400 text-3xl mb-2"
+                                ></i>
+                                <div class="text-sm text-gray-400">
+                                  <label
+                                    for="file-upload"
+                                    class="relative cursor-pointer bg-[#111827] rounded-md font-medium text-primary hover:text-primary/80 focus-within:outline-none"
+                                  >
+                                    <span>Télécharger un fichier</span>
+                                    <input
+                                      id="file-upload"
+                                      name="file-upload"
+                                      type="file"
+                                      class="sr-only"
+                                    />
+                                  </label>
+                                  <p class="pl-1">ou glisser-déposer</p>
+                                </div>
+                                <p class="text-xs text-gray-400">
+                                  PNG, JPG, PDF jusqu'à 10MB
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="flex justify-end space-x-3 mt-6">
+                          <button
+                            type="button"
+                            id="cancelStatusUpdate"
+                            class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-gray-700 rounded-lg transition !rounded-button whitespace-nowrap"
+                          >
+                            Annuler
+                          </button>
+                          <button
+                            type="submit"
+                            class="px-4 py-2 text-sm font-medium text-[#111827] bg-yellow-400 hover:bg-yellow-500 rounded-lg transition !rounded-button whitespace-nowrap"
+                          >
+                            Mettre à jour
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                  <a
+                    href="https://readdy.ai/home/680d870f-685e-4f34-a85e-f894a22236ac/f81d0145-f982-440d-a825-e99138886c38"
+                    data-readdy="true"
+                    class="flex flex-col items-center justify-center bg-[#111827] hover:bg-gray-800 transition p-4 rounded-lg col-span-2"
+                  >
+                    <div
+                      class="w-10 h-10 flex items-center justify-center bg-purple-900/20 text-purple-400 rounded-full mb-2"
+                    >
+                      <i class="ri-database-2-line"></i>
+                    </div>
+                    <span class="text-sm text-white text-center"
+                      >Accéder à la base de données</span
+                    >
+                  </a>
+                </div>
+                <!-- Success Rate -->
+                <div class="mt-6 pt-6 border-t border-gray-700">
+                  <h4 class="text-sm font-medium text-white mb-4">
+                    Taux de réussite des missions
+                  </h4>
+                  <div class="relative pt-1">
+                    <div class="flex items-center justify-between mb-2">
+                      <div>
+                        <span
+                          class="text-xs font-semibold inline-block text-primary"
+                          >78%</span
+                        >
+                      </div>
+                      <div class="text-right">
+                        <span
+                          class="text-xs font-semibold inline-block text-gray-400"
+                          >Objectif: 85%</span
+                        >
+                      </div>
+                    </div>
+                    <div
+                      class="overflow-hidden h-2 text-xs flex rounded bg-gray-700"
+                    >
+                      <div
+                        style="width: 78%"
+                        class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const notificationBtn = document.getElementById("notificationBtn");
+        const notificationDropdown = document.getElementById("notificationDropdown");
+        const markAllRead = document.getElementById("markAllRead");
+        if (notificationBtn && notificationDropdown) {
+          notificationBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            notificationDropdown.classList.toggle("hidden");
+          });
+          document.addEventListener("click", (e) => {
+            if (
+              !notificationBtn.contains(e.target) &&
+              !notificationDropdown.contains(e.target)
+            ) {
+              notificationDropdown.classList.add("hidden");
+            }
+          });
+          if (markAllRead) {
+            markAllRead.addEventListener("click", () => {
+              const unreadDots = document.querySelectorAll(
+                ".notification-item .bg-primary",
+              );
+              unreadDots.forEach((dot) => {
+                dot.classList.remove("bg-primary");
+                dot.classList.add("bg-gray-600");
+              });
+              const unreadItems = document.querySelectorAll(
+                ".notification-item.bg-gray-800\\/50",
+              );
+              unreadItems.forEach((item) => {
+                item.classList.remove("bg-gray-800/50");
+              });
+            });
+          }
+        }
+        // Status Update Modal
+        const statusUpdateBtn = document.getElementById("statusUpdateBtn");
+        const statusUpdateModal = document.getElementById("statusUpdateModal");
+        const closeStatusUpdate = document.getElementById("closeStatusUpdate");
+        const cancelStatusUpdate = document.getElementById("cancelStatusUpdate");
+        const statusUpdateForm = document.getElementById("statusUpdateForm");
+        const statusMissionBtn = document.getElementById("statusMissionBtn");
+        const statusMissionDropdown = document.getElementById(
+          "statusMissionDropdown",
+        );
+        if (statusUpdateBtn && statusUpdateModal) {
+          statusUpdateBtn.addEventListener("click", () => {
+            statusUpdateModal.classList.remove("hidden");
+            statusUpdateModal.classList.add("flex");
+          });
+          if (closeStatusUpdate) {
+            closeStatusUpdate.addEventListener("click", () => {
+              statusUpdateModal.classList.add("hidden");
+              statusUpdateModal.classList.remove("flex");
+            });
+          }
+          if (cancelStatusUpdate) {
+            cancelStatusUpdate.addEventListener("click", () => {
+              statusUpdateModal.classList.add("hidden");
+              statusUpdateModal.classList.remove("flex");
+            });
+          }
+          if (statusMissionBtn) {
+            statusMissionBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              statusMissionDropdown.classList.toggle("hidden");
+            });
+          }
+          document.querySelectorAll(".status-mission-option").forEach((option) => {
+            option.addEventListener("click", (e) => {
+              document.getElementById("selectedStatusMission").textContent =
+                e.target.textContent;
+              statusMissionDropdown.classList.add("hidden");
+            });
+          });
+          if (statusUpdateForm) {
+            statusUpdateForm.addEventListener("submit", (e) => {
+              e.preventDefault();
+              statusUpdateModal.classList.add("hidden");
+              statusUpdateModal.classList.remove("flex");
+            });
+          }
+          // Style selected radio buttons for status
+          const statusInputs = document.querySelectorAll('input[name="status"]');
+          statusInputs.forEach((input) => {
+            input.addEventListener("change", () => {
+              statusInputs.forEach((radio) => {
+                const span = radio.nextElementSibling;
+                if (radio.checked) {
+                  span.classList.remove("text-gray-300", "bg-[#111827]");
+                  span.classList.add("text-[#111827]", "bg-yellow-400");
+                } else {
+                  span.classList.remove("text-[#111827]", "bg-yellow-400");
+                  span.classList.add("text-gray-300", "bg-[#111827]");
+                }
+              });
+            });
+          });
+        }
+        // Reinforcement Modal
+        const reinforcementBtn = document.getElementById("reinforcementBtn");
+        const reinforcementModal = document.getElementById("reinforcementModal");
+        const closeReinforcement = document.getElementById("closeReinforcement");
+        const cancelReinforcement = document.getElementById("cancelReinforcement");
+        const reinforcementForm = document.getElementById("reinforcementForm");
+        const missionSelectBtn = document.getElementById("missionSelectBtn");
+        const missionDropdown = document.getElementById("missionDropdown");
+        if (reinforcementBtn && reinforcementModal) {
+          reinforcementBtn.addEventListener("click", () => {
+            reinforcementModal.classList.remove("hidden");
+            reinforcementModal.classList.add("flex");
+          });
+          if (closeReinforcement) {
+            closeReinforcement.addEventListener("click", () => {
+              reinforcementModal.classList.add("hidden");
+              reinforcementModal.classList.remove("flex");
+            });
+          }
+          if (cancelReinforcement) {
+            cancelReinforcement.addEventListener("click", () => {
+              reinforcementModal.classList.add("hidden");
+              reinforcementModal.classList.remove("flex");
+            });
+          }
+          if (missionSelectBtn) {
+            missionSelectBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              missionDropdown.classList.toggle("hidden");
+            });
+          }
+          document.querySelectorAll(".mission-option").forEach((option) => {
+            option.addEventListener("click", (e) => {
+              document.getElementById("selectedMission").textContent =
+                e.target.textContent;
+              missionDropdown.classList.add("hidden");
+            });
+          });
+          if (reinforcementForm) {
+            reinforcementForm.addEventListener("submit", (e) => {
+              e.preventDefault();
+              reinforcementModal.classList.add("hidden");
+              reinforcementModal.classList.remove("flex");
+            });
+          }
+          // Style selected radio buttons
+          const urgencyInputs = document.querySelectorAll('input[name="urgency"]');
+          urgencyInputs.forEach((input) => {
+            input.addEventListener("change", () => {
+              urgencyInputs.forEach((radio) => {
+                const span = radio.nextElementSibling;
+                if (radio.checked) {
+                  span.classList.remove("text-gray-300", "bg-[#111827]");
+                  span.classList.add("text-[#111827]", "bg-green-400");
+                } else {
+                  span.classList.remove("text-[#111827]", "bg-green-400");
+                  span.classList.add("text-gray-300", "bg-[#111827]");
+                }
+              });
+            });
+          });
+        }
+        // Quick Alert Modal
+        const quickAlertBtn = document.getElementById("quickAlertBtn");
+        const quickAlertModal = document.getElementById("quickAlertModal");
+        const closeQuickAlert = document.getElementById("closeQuickAlert");
+        const cancelQuickAlert = document.getElementById("cancelQuickAlert");
+        const quickAlertForm = document.getElementById("quickAlertForm");
+        const alertLevelBtn = document.getElementById("alertLevelBtn");
+        const alertLevelDropdown = document.getElementById("alertLevelDropdown");
+        const locationBtn = document.getElementById("locationBtn");
+        const locationDropdown = document.getElementById("locationDropdown");
+        function toggleDropdown(dropdown) {
+          const allDropdowns = document.querySelectorAll('[id$="Dropdown"]');
+          allDropdowns.forEach((d) => {
+            if (d !== dropdown) d.classList.add("hidden");
+          });
+          dropdown.classList.toggle("hidden");
+        }
+        function closeAllDropdowns() {
+          const allDropdowns = document.querySelectorAll('[id$="Dropdown"]');
+          allDropdowns.forEach((d) => d.classList.add("hidden"));
+        }
+        if (quickAlertBtn && quickAlertModal) {
+          quickAlertBtn.addEventListener("click", () => {
+            quickAlertModal.classList.remove("hidden");
+            quickAlertModal.classList.add("flex");
+          });
+          document.querySelectorAll(".alert-level-option").forEach((option) => {
+            option.addEventListener("click", (e) => {
+              document.getElementById("selectedLevel").textContent =
+                e.target.textContent;
+              alertLevelDropdown.classList.add("hidden");
+            });
+          });
+          document.querySelectorAll(".location-option").forEach((option) => {
+            option.addEventListener("click", (e) => {
+              document.getElementById("selectedLocation").textContent =
+                e.target.textContent;
+              locationDropdown.classList.add("hidden");
+            });
+          });
+          alertLevelBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleDropdown(alertLevelDropdown);
+          });
+          locationBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleDropdown(locationDropdown);
+          });
+          document.addEventListener("click", (e) => {
+            if (
+              !e.target.closest("#alertLevelBtn") &&
+              !e.target.closest("#locationBtn")
+            ) {
+              closeAllDropdowns();
+            }
+          });
+          if (closeQuickAlert) {
+            closeQuickAlert.addEventListener("click", () => {
+              quickAlertModal.classList.add("hidden");
+              quickAlertModal.classList.remove("flex");
+            });
+          }
+          if (cancelQuickAlert) {
+            cancelQuickAlert.addEventListener("click", () => {
+              quickAlertModal.classList.add("hidden");
+              quickAlertModal.classList.remove("flex");
+            });
+          }
+          if (quickAlertForm) {
+            quickAlertForm.addEventListener("submit", (e) => {
+              e.preventDefault();
+              quickAlertModal.classList.add("hidden");
+              quickAlertModal.classList.remove("flex");
+            });
+          }
+        }
+        // Logout Modal
+        const logoutButton = document.getElementById("logoutButton");
+        const logoutModal = document.getElementById("logoutModal");
+        const cancelLogout = document.getElementById("cancelLogout");
+        const confirmLogout = document.getElementById("confirmLogout");
+        if (logoutButton && logoutModal) {
+          logoutButton.addEventListener("click", function () {
+            logoutModal.classList.remove("hidden");
+            logoutModal.classList.add("flex");
+          });
+          if (cancelLogout) {
+            cancelLogout.addEventListener("click", function () {
+              logoutModal.classList.add("hidden");
+              logoutModal.classList.remove("flex");
+            });
+          }
+          if (confirmLogout) {
+            confirmLogout.addEventListener("click", function () {
+              // Logout logic would go here
+              logoutModal.classList.add("hidden");
+              logoutModal.classList.remove("flex");
+            });
+          }
+        }
+        // Activity Chart
+        const activityChart = echarts.init(document.getElementById("activityChart"));
+        const activityOption = {
+          animation: false,
+          tooltip: {
+            trigger: "axis",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            borderColor: "#E5E7EB",
+            textStyle: {
+              color: "#1f2937",
+            },
+          },
+          grid: {
+            top: 10,
+            right: 10,
+            bottom: 20,
+            left: 50,
+          },
+          xAxis: {
+            type: "category",
+            data: ["Nov", "Déc", "Jan", "Fév", "Mar", "Avr"],
+            axisLine: {
+              lineStyle: {
+                color: "#4B5563",
+              },
+            },
+            axisLabel: {
+              color: "#9CA3AF",
+            },
+          },
+          yAxis: {
+            type: "value",
+            axisLine: {
+              lineStyle: {
+                color: "#4B5563",
+              },
+            },
+            splitLine: {
+              lineStyle: {
+                color: "#374151",
+              },
+            },
+            axisLabel: {
+              color: "#9CA3AF",
+            },
+          },
+          series: [
+            {
+              name: "Incidents",
+              type: "line",
+              smooth: true,
+              data: [42, 38, 55, 48, 63, 72],
+              lineStyle: {
+                color: "rgba(87, 181, 231, 1)",
+              },
+              itemStyle: {
+                color: "rgba(87, 181, 231, 1)",
+              },
+              symbol: "none",
+              areaStyle: {
+                color: {
+                  type: "linear",
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [
+                    {
+                      offset: 0,
+                      color: "rgba(87, 181, 231, 0.2)",
+                    },
+                    {
+                      offset: 1,
+                      color: "rgba(87, 181, 231, 0.05)",
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              name: "Missions",
+              type: "line",
+              smooth: true,
+              data: [30, 32, 40, 45, 55, 65],
+              lineStyle: {
+                color: "rgba(141, 211, 199, 1)",
+              },
+              itemStyle: {
+                color: "rgba(141, 211, 199, 1)",
+              },
+              symbol: "none",
+              areaStyle: {
+                color: {
+                  type: "linear",
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [
+                    {
+                      offset: 0,
+                      color: "rgba(141, 211, 199, 0.2)",
+                    },
+                    {
+                      offset: 1,
+                      color: "rgba(141, 211, 199, 0.05)",
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        };
+        activityChart.setOption(activityOption);
+        // Mission Types Chart
+        const missionTypesChart = echarts.init(
+          document.getElementById("missionTypesChart"),
+        );
+        const missionTypesOption = {
+          animation: false,
+          tooltip: {
+            trigger: "item",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            borderColor: "#E5E7EB",
+            textStyle: {
+              color: "#1f2937",
+            },
+          },
+          legend: {
+            orient: "vertical",
+            right: 10,
+            top: "center",
+            textStyle: {
+              color: "#E5E7EB",
+            },
+          },
+          series: [
+            {
+              name: "Types de Missions",
+              type: "pie",
+              radius: ["40%", "70%"],
+              center: ["40%", "50%"],
+              avoidLabelOverlap: false,
+              itemStyle: {
+                borderRadius: 8,
+                borderColor: "#1F2937",
+                borderWidth: 2,
+              },
+              label: {
+                show: false,
+              },
+              emphasis: {
+                label: {
+                  show: false,
+                },
+              },
+              labelLine: {
+                show: false,
+              },
+              data: [
+                {
+                  value: 35,
+                  name: "Élimination",
+                  itemStyle: { color: "rgba(87, 181, 231, 1)" },
+                },
+                {
+                  value: 25,
+                  name: "Capture",
+                  itemStyle: { color: "rgba(141, 211, 199, 1)" },
+                },
+                {
+                  value: 20,
+                  name: "Reconnaissance",
+                  itemStyle: { color: "rgba(251, 191, 114, 1)" },
+                },
+                {
+                  value: 15,
+                  name: "Raid",
+                  itemStyle: { color: "rgba(252, 141, 98, 1)" },
+                },
+              ],
+            },
+          ],
+        };
+        missionTypesChart.setOption(missionTypesOption);
+        // Resize charts when window is resized
+        window.addEventListener("resize", function () {
+          activityChart.resize();
+          missionTypesChart.resize();
+        });
+      });
+    </script>
+  </body>
+</html>
